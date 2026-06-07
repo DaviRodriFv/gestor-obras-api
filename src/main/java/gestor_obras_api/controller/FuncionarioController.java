@@ -2,7 +2,9 @@ package gestor_obras_api.controller;
 
 import gestor_obras_api.dto.FuncionarioRequestDTO;
 import gestor_obras_api.dto.FuncionarioResponseDTO;
+import gestor_obras_api.dto.FuncionarioUpdateDTO;
 import gestor_obras_api.service.FuncionarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,14 +30,14 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public ResponseEntity<FuncionarioResponseDTO> criar(@RequestBody FuncionarioRequestDTO dto) {
+    public ResponseEntity<FuncionarioResponseDTO> criar(@Valid @RequestBody FuncionarioRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioService.criar(dto));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<FuncionarioResponseDTO> atualizar(
             @PathVariable Long id,
-            @RequestBody FuncionarioRequestDTO dto
+            @Valid @RequestBody FuncionarioUpdateDTO dto
     ) {
         return ResponseEntity.ok(funcionarioService.atualizar(id, dto));
     }

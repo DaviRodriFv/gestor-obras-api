@@ -2,6 +2,7 @@ package gestor_obras_api.service;
 
 import gestor_obras_api.dto.FuncionarioRequestDTO;
 import gestor_obras_api.dto.FuncionarioResponseDTO;
+import gestor_obras_api.dto.FuncionarioUpdateDTO;
 import gestor_obras_api.model.Funcionario;
 import gestor_obras_api.repository.FuncionarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,7 @@ public class FuncionarioService {
     }
 
     public FuncionarioResponseDTO buscarPorId(Long id) {
-        Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado com id: " + id));
-        return toDTO(funcionario);
+        return toDTO(findOrThrow(id));
     }
 
     public FuncionarioResponseDTO criar(FuncionarioRequestDTO dto) {
@@ -44,9 +43,8 @@ public class FuncionarioService {
         return toDTO(funcionarioRepository.save(funcionario));
     }
 
-    public FuncionarioResponseDTO atualizar(Long id, FuncionarioRequestDTO dto) {
-        Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado com id: " + id));
+    public FuncionarioResponseDTO atualizar(Long id, FuncionarioUpdateDTO dto) {
+        Funcionario funcionario = findOrThrow(id);
 
         if (dto.getNome() != null) funcionario.setNome(dto.getNome());
         if (dto.getEmail() != null) funcionario.setEmail(dto.getEmail());
@@ -65,6 +63,11 @@ public class FuncionarioService {
             throw new RuntimeException("Funcionário não encontrado com id: " + id);
         }
         funcionarioRepository.deleteById(id);
+    }
+
+    private Funcionario findOrThrow(Long id) {
+        return funcionarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado com id: " + id));
     }
 
     private FuncionarioResponseDTO toDTO(Funcionario f) {

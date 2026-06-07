@@ -1,19 +1,14 @@
 package gestor_obras_api.controller;
 
-import gestor_obras_api.dto.FuncionarioResponseDTO;
+import gestor_obras_api.config.JwtService;
 import gestor_obras_api.dto.LoginRequestDTO;
+import gestor_obras_api.dto.LoginResponseDTO;
 import gestor_obras_api.model.Funcionario;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,41 +17,29 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final HttpSessionSecurityContextRepository securityContextRepository =
-            new HttpSessionSecurityContextRepository();
+    private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<FuncionarioResponseDTO> login(
-            @RequestBody LoginRequestDTO dto,
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO dto) {
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
         );
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(auth);
-        SecurityContextHolder.setContext(context);
-        securityContextRepository.saveContext(context, request, response);
-
         Funcionario funcionario = (Funcionario) auth.getPrincipal();
-        return ResponseEntity.ok(new FuncionarioResponseDTO(
+        String token = jwtService.generateToken(funcionario);
+        return ResponseEntity.ok(new LoginResponseDTO(
                 funcionario.getId(),
                 funcionario.getNome(),
                 funcionario.getEmail(),
                 funcionario.getCargo(),
                 funcionario.getTelefone(),
-                funcionario.getAtivo()
+                funcionario.getAtivo(),
+                token
         ));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest request) {
-        SecurityContextHolder.clearContext();
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
+    public ResponseEntity<Void> logout() {
+        // JWT é stateless — o cliente descarta o token
         return ResponseEntity.noContent().build();
     }
 }
