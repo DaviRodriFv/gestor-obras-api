@@ -1,6 +1,6 @@
 package gestor_obras_api.obra.exception;
 
-import gestor_obras_api.obra.StatusObra;
+import gestor_obras_api.obra.model.StatusObra;
 
 public class TransicaoStatusInvalidaException extends RuntimeException {
 

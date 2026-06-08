@@ -1,6 +1,6 @@
 package gestor_obras_api.config;
 
-import gestor_obras_api.service.UserDetailsServiceImpl;
+import gestor_obras_api.auth.service.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

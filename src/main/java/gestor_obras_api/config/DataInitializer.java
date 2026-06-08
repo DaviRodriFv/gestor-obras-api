@@ -1,8 +1,8 @@
 package gestor_obras_api.config;
 
-import gestor_obras_api.model.Funcionario;
-import gestor_obras_api.model.TipoCargo;
-import gestor_obras_api.repository.FuncionarioRepository;
+import gestor_obras_api.funcionario.model.Funcionario;
+import gestor_obras_api.funcionario.model.TipoCargo;
+import gestor_obras_api.funcionario.repository.FuncionarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,6 +1,6 @@
 package gestor_obras_api.config;
 
-import gestor_obras_api.service.UserDetailsServiceImpl;
+import gestor_obras_api.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
