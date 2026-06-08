@@ -31,7 +31,5 @@ public class ObraRequestDTO {
     @NotNull
     private LocalDate prazoConclusao;
 
-    // Opcional na criação — padrão EM_ANDAMENTO (definido no @PrePersist).
-    // Não deve ser CANCELADA (validado no service).
     private StatusObra status;
 }

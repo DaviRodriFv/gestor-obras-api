@@ -24,8 +24,7 @@ public class ObraService {
     private final ObraRepository obraRepository;
     private final ObraMapper obraMapper;
 
-    // Máquina de estados centralizada.
-    // CONCLUIDA e CANCELADA são terminais: ausência de chave = nenhuma transição permitida.
+
     private static final Map<StatusObra, Set<StatusObra>> TRANSICOES_PERMITIDAS;
 
     static {
