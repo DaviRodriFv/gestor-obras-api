@@ -1,9 +1,9 @@
 package gestor_obras_api.obra;
 
+import gestor_obras_api.dto.AlterarStatusDTO;
+import gestor_obras_api.dto.ObraRequestDTO;
+import gestor_obras_api.dto.ObraResponseDTO;
 import gestor_obras_api.model.Funcionario;
-import gestor_obras_api.obra.dto.AlterarStatusDTO;
-import gestor_obras_api.obra.dto.ObraRequestDTO;
-import gestor_obras_api.obra.dto.ObraResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

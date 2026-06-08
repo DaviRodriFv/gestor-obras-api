@@ -1,4 +1,4 @@
-package gestor_obras_api.obra.dto;
+package gestor_obras_api.dto;
 
 import gestor_obras_api.obra.StatusObra;
 import jakarta.validation.constraints.NotNull;
