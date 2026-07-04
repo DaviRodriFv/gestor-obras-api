@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,10 +39,20 @@ public class AuthController {
                 funcionario.getId(),
                 funcionario.getNome(),
                 funcionario.getEmail(),
-                funcionario.getCargo(),
+                funcionario.getRole(),
                 funcionario.getTelefone(),
                 funcionario.getAtivo(),
                 token
+        ));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> me(@AuthenticationPrincipal Funcionario funcionario) {
+        return ResponseEntity.ok(Map.of(
+                "id", funcionario.getId(),
+                "nome", funcionario.getNome(),
+                "email", funcionario.getEmail(),
+                "role", funcionario.getRole()
         ));
     }
 

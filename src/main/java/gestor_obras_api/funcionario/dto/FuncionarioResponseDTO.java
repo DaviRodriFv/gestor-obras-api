@@ -11,6 +11,7 @@ public class FuncionarioResponseDTO {
     private String nome;
     private String email;
     private TipoCargo cargo;
+    private String role;
     private String telefone;
     private Boolean ativo;
 }

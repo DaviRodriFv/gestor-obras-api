@@ -23,10 +23,24 @@ public class DataInitializer implements CommandLineRunner {
             admin.setEmail("admgestor@gmail.com");
             admin.setSenha(passwordEncoder.encode("adm@1234"));
             admin.setCargo(TipoCargo.ADMINISTRADOR);
+            admin.setRole("EQUIPE");
             admin.setTelefone("(00) 00000-0000");
             admin.setAtivo(true);
             funcionarioRepository.save(admin);
             System.out.println(">>> Usuário admin criado: admgestor@gmail.com");
+        }
+
+        if (funcionarioRepository.findByEmail("proprietario@gestor.com").isEmpty()) {
+            Funcionario proprietario = new Funcionario();
+            proprietario.setNome("Proprietário");
+            proprietario.setEmail("proprietario@gestor.com");
+            proprietario.setSenha(passwordEncoder.encode("prop@1234"));
+            proprietario.setCargo(TipoCargo.EQUIPE);
+            proprietario.setRole("PROPRIETARIO");
+            proprietario.setTelefone("(00) 11111-1111");
+            proprietario.setAtivo(true);
+            funcionarioRepository.save(proprietario);
+            System.out.println(">>> Usuário proprietário criado: proprietario@gestor.com");
         }
     }
 }

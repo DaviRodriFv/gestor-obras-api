@@ -4,6 +4,7 @@ import gestor_obras_api.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -53,9 +54,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/obras/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers("/api/funcionarios/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/redefinir-senha").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/financeiro/**").hasAnyRole("EQUIPE", "PROPRIETARIO")
+                        .requestMatchers("/api/financeiro/**").hasRole("EQUIPE")
+                        .requestMatchers("/api/obras/**", "/api/funcionarios/**", "/api/custos/**", "/api/fornecedores/**", "/api/relatorios/**").hasRole("EQUIPE")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

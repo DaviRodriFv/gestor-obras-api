@@ -38,6 +38,7 @@ public class FuncionarioService {
         funcionario.setEmail(dto.getEmail());
         funcionario.setSenha(passwordEncoder.encode(dto.getSenha()));
         funcionario.setCargo(dto.getCargo());
+        funcionario.setRole(dto.getRole());
         funcionario.setTelefone(dto.getTelefone());
         funcionario.setAtivo(true);
         return toDTO(funcionarioRepository.save(funcionario));
@@ -52,6 +53,7 @@ public class FuncionarioService {
             funcionario.setSenha(passwordEncoder.encode(dto.getSenha()));
         }
         if (dto.getCargo() != null) funcionario.setCargo(dto.getCargo());
+        if (dto.getRole() != null) funcionario.setRole(dto.getRole());
         if (dto.getTelefone() != null) funcionario.setTelefone(dto.getTelefone());
         if (dto.getAtivo() != null) funcionario.setAtivo(dto.getAtivo());
 
@@ -72,7 +74,7 @@ public class FuncionarioService {
 
     private FuncionarioResponseDTO toDTO(Funcionario f) {
         return new FuncionarioResponseDTO(
-                f.getId(), f.getNome(), f.getEmail(), f.getCargo(), f.getTelefone(), f.getAtivo()
+                f.getId(), f.getNome(), f.getEmail(), f.getCargo(), f.getRole(), f.getTelefone(), f.getAtivo()
         );
     }
 }

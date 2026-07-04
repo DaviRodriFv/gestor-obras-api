@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 @Getter
 @Setter
@@ -36,14 +37,31 @@ public class Funcionario implements UserDetails {
     private TipoCargo cargo;
 
     @Column(nullable = false)
+    private String role = "EQUIPE";
+
+    @Column(nullable = false)
     private String telefone;
 
     @Column(nullable = false)
     private Boolean ativo = true;
 
+    @PrePersist
+    @PreUpdate
+    private void normalizeRole() {
+        role = normalizeRoleValue(role);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + cargo.name()));
+        String authorityRole = normalizeRoleValue(role != null ? role : (cargo != null ? cargo.name() : "EQUIPE"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + authorityRole));
+    }
+
+    private String normalizeRoleValue(String value) {
+        if (value == null || value.isBlank()) {
+            return "EQUIPE";
+        }
+        return value.trim().toUpperCase(Locale.ROOT);
     }
 
     @Override
