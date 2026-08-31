@@ -4,6 +4,7 @@ import gestor_obras_api.funcionario.model.Funcionario;
 import gestor_obras_api.obra.dto.AlterarStatusDTO;
 import gestor_obras_api.obra.dto.ObraRequestDTO;
 import gestor_obras_api.obra.dto.ObraResponseDTO;
+import gestor_obras_api.obra.exception.ObraDuplicadaException;
 import gestor_obras_api.obra.exception.ObraNotFoundException;
 import gestor_obras_api.obra.exception.TransicaoStatusInvalidaException;
 import gestor_obras_api.obra.mapper.ObraMapper;
@@ -63,6 +64,9 @@ public class ObraService {
     public ObraResponseDTO criar(ObraRequestDTO dto, Funcionario funcionario) {
         validarDatas(dto);
         validarStatusCriacao(dto.getStatus());
+        if (obraRepository.existsByNomeAndCliente(dto.getNome(), dto.getCliente())) {
+            throw new ObraDuplicadaException(dto.getNome(), dto.getCliente());
+        }
         Obra obra = obraMapper.toEntity(dto, funcionario);
         return obraMapper.toResponse(obraRepository.save(obra));
     }

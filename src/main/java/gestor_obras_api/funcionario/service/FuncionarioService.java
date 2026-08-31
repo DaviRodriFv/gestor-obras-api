@@ -3,6 +3,8 @@ package gestor_obras_api.funcionario.service;
 import gestor_obras_api.funcionario.dto.FuncionarioRequestDTO;
 import gestor_obras_api.funcionario.dto.FuncionarioResponseDTO;
 import gestor_obras_api.funcionario.dto.FuncionarioUpdateDTO;
+import gestor_obras_api.funcionario.exception.EmailJaCadastradoException;
+import gestor_obras_api.funcionario.exception.FuncionarioNotFoundException;
 import gestor_obras_api.funcionario.model.Funcionario;
 import gestor_obras_api.funcionario.repository.FuncionarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +33,7 @@ public class FuncionarioService {
 
     public FuncionarioResponseDTO criar(FuncionarioRequestDTO dto) {
         if (funcionarioRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email já cadastrado: " + dto.getEmail());
+            throw new EmailJaCadastradoException(dto.getEmail());
         }
         Funcionario funcionario = new Funcionario();
         funcionario.setNome(dto.getNome());
@@ -62,14 +64,14 @@ public class FuncionarioService {
 
     public void deletar(Long id) {
         if (!funcionarioRepository.existsById(id)) {
-            throw new RuntimeException("Funcionário não encontrado com id: " + id);
+            throw new FuncionarioNotFoundException(id);
         }
         funcionarioRepository.deleteById(id);
     }
 
     private Funcionario findOrThrow(Long id) {
         return funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado com id: " + id));
+                .orElseThrow(() -> new FuncionarioNotFoundException(id));
     }
 
     private FuncionarioResponseDTO toDTO(Funcionario f) {

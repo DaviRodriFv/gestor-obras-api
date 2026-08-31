@@ -11,6 +11,8 @@ import java.util.UUID;
 
 public interface ObraRepository extends JpaRepository<Obra, UUID> {
 
+    boolean existsByNomeAndCliente(String nome, String cliente);
+
     List<Obra> findByStatus(StatusObra status);
 
     @Query("SELECT o FROM Obra o WHERE " +
