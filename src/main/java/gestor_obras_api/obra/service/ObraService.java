@@ -1,5 +1,8 @@
 package gestor_obras_api.obra.service;
 
+import gestor_obras_api.cronograma.model.Etapa;
+import gestor_obras_api.cronograma.model.StatusEtapa;
+import gestor_obras_api.cronograma.repository.EtapaRepository;
 import gestor_obras_api.funcionario.model.Funcionario;
 import gestor_obras_api.obra.dto.AlterarStatusDTO;
 import gestor_obras_api.obra.dto.ObraRequestDTO;
@@ -28,6 +31,7 @@ public class ObraService {
 
     private final ObraRepository obraRepository;
     private final ObraMapper obraMapper;
+    private final EtapaRepository etapaRepository;
 
     private static final Map<StatusObra, Set<StatusObra>> TRANSICOES_PERMITIDAS;
 
@@ -135,12 +139,12 @@ public class ObraService {
     }
 
     /**
-     * TODO: Integrar com módulo de Cronograma quando disponível.
-     * Regra real: somatório das etapas == 100%.
-     * Enquanto não integrado, qualquer obra pode ser concluída.
+     * Obra só pode ser concluída se todas as etapas do cronograma estiverem
+     * com status CONCLUIDA. Obras sem etapas cadastradas não ficam bloqueadas.
      */
     private boolean podeConcluir(Obra obra) {
-        return true;
+        List<Etapa> etapas = etapaRepository.findByObraId(obra.getId());
+        return etapas.isEmpty() || etapas.stream().allMatch(e -> e.getStatus() == StatusEtapa.CONCLUIDA);
     }
 
     /**

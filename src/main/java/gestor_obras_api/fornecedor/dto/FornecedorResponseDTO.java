@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,4 +18,5 @@ public class FornecedorResponseDTO {
     private String endereco;
     private LocalDateTime criadoEm;
     private Boolean ativo;
+    private List<ObraResumoDTO> obrasVinculadas;
 }

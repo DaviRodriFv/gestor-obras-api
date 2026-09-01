@@ -19,8 +19,6 @@ public class FuncionarioUpdateDTO {
 
     private TipoCargo cargo;
 
-    private String role;
-
     private String telefone;
 
     private Boolean ativo;

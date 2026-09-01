@@ -3,10 +3,14 @@ package gestor_obras_api.fornecedor.service;
 import gestor_obras_api.fornecedor.dto.FornecedorRequestDTO;
 import gestor_obras_api.fornecedor.dto.FornecedorResponseDTO;
 import gestor_obras_api.fornecedor.dto.FornecedorUpdateDTO;
+import gestor_obras_api.fornecedor.dto.ObraResumoDTO;
 import gestor_obras_api.fornecedor.exception.FornecedorEmailJaCadastradoException;
 import gestor_obras_api.fornecedor.exception.FornecedorNotFoundException;
 import gestor_obras_api.fornecedor.model.Fornecedor;
 import gestor_obras_api.fornecedor.repository.FornecedorRepository;
+import gestor_obras_api.obra.exception.ObraNotFoundException;
+import gestor_obras_api.obra.model.Obra;
+import gestor_obras_api.obra.repository.ObraRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +23,7 @@ import java.util.UUID;
 public class FornecedorService {
 
     private final FornecedorRepository fornecedorRepository;
+    private final ObraRepository obraRepository;
 
     @Transactional(readOnly = true)
     public List<FornecedorResponseDTO> listarTodos() {
@@ -69,15 +74,34 @@ public class FornecedorService {
         fornecedorRepository.deleteById(id);
     }
 
+    @Transactional
+    public FornecedorResponseDTO vincularObra(UUID fornecedorId, UUID obraId) {
+        Fornecedor fornecedor = findOrThrow(fornecedorId);
+        Obra obra = obraRepository.findById(obraId)
+                .orElseThrow(() -> new ObraNotFoundException(obraId));
+        fornecedor.getObras().add(obra);
+        return toDTO(fornecedorRepository.save(fornecedor));
+    }
+
+    @Transactional
+    public FornecedorResponseDTO desvincularObra(UUID fornecedorId, UUID obraId) {
+        Fornecedor fornecedor = findOrThrow(fornecedorId);
+        fornecedor.getObras().removeIf(o -> o.getId().equals(obraId));
+        return toDTO(fornecedorRepository.save(fornecedor));
+    }
+
     private Fornecedor findOrThrow(UUID id) {
         return fornecedorRepository.findById(id)
                 .orElseThrow(() -> new FornecedorNotFoundException(id));
     }
 
     private FornecedorResponseDTO toDTO(Fornecedor f) {
+        List<ObraResumoDTO> obras = f.getObras().stream()
+                .map(o -> new ObraResumoDTO(o.getId(), o.getNome()))
+                .toList();
         return new FornecedorResponseDTO(
                 f.getId(), f.getNome(), f.getTipoServico(), f.getTelefone(), f.getEmail(),
-                f.getEndereco(), f.getCriadoEm(), f.isAtivo()
+                f.getEndereco(), f.getCriadoEm(), f.isAtivo(), obras
         );
     }
 }

@@ -8,6 +8,8 @@ import gestor_obras_api.obra.exception.TransicaoStatusInvalidaException;
 import gestor_obras_api.fornecedor.exception.FornecedorNotFoundException;
 import gestor_obras_api.fornecedor.exception.FornecedorEmailJaCadastradoException;
 import gestor_obras_api.custo.exception.CustoNotFoundException;
+import gestor_obras_api.cronograma.exception.EtapaNotFoundException;
+import gestor_obras_api.cronograma.exception.EtapaNaoPertenceObraException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -69,6 +71,18 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleCustoNotFound(
             CustoNotFoundException ex, HttpServletRequest request) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(EtapaNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleEtapaNotFound(
+            EtapaNotFoundException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(EtapaNaoPertenceObraException.class)
+    public ResponseEntity<Map<String, Object>> handleEtapaNaoPertenceObra(
+            EtapaNaoPertenceObraException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

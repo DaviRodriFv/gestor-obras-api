@@ -4,9 +4,11 @@ import gestor_obras_api.auth.service.UserDetailsServiceImpl;
 import gestor_obras_api.config.JwtAuthFilter;
 import gestor_obras_api.config.JwtService;
 import gestor_obras_api.config.SecurityConfig;
+import gestor_obras_api.funcionario.controller.FuncionarioController;
 import gestor_obras_api.funcionario.model.Funcionario;
 import gestor_obras_api.funcionario.model.TipoCargo;
 import gestor_obras_api.funcionario.repository.FuncionarioRepository;
+import gestor_obras_api.funcionario.service.FuncionarioService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -16,17 +18,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = gestor_obras_api.financeiro.controller.FinanceiroController.class)
+@WebMvcTest(controllers = FuncionarioController.class)
 @Import({SecurityConfig.class, JwtAuthFilter.class})
-class FinanceiroControllerSecurityTest {
+class FuncionarioControllerSecurityTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private FuncionarioService funcionarioService;
 
     @MockitoBean
     private JwtService jwtService;
@@ -44,37 +50,19 @@ class FinanceiroControllerSecurityTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    void administradorPodeAcessarDashboardFinanceiro() throws Exception {
-        mockMvc.perform(get("/api/financeiro/dashboard")
+    void administradorPodeListarFuncionarios() throws Exception {
+        org.mockito.Mockito.when(funcionarioService.listarTodos()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/funcionarios")
                         .with(user(criarFuncionario(TipoCargo.ADMINISTRADOR))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void equipePodeAcessarDashboardFinanceiro() throws Exception {
-        mockMvc.perform(get("/api/financeiro/dashboard")
+    void equipeNaoPodeListarFuncionarios() throws Exception {
+        mockMvc.perform(get("/api/funcionarios")
                         .with(user(criarFuncionario(TipoCargo.EQUIPE))))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void administradorPodeCriarEntradaFinanceira() throws Exception {
-        mockMvc.perform(post("/api/financeiro/entrada")
-                        .with(user(criarFuncionario(TipoCargo.ADMINISTRADOR))))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void equipePodeCriarEntradaFinanceira() throws Exception {
-        mockMvc.perform(post("/api/financeiro/entrada")
-                        .with(user(criarFuncionario(TipoCargo.EQUIPE))))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void semAutenticacaoNaoPodeAcessarFinanceiro() throws Exception {
-        mockMvc.perform(get("/api/financeiro/dashboard"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     private Funcionario criarFuncionario(TipoCargo cargo) {

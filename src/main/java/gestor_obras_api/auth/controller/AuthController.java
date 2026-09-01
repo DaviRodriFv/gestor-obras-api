@@ -39,7 +39,7 @@ public class AuthController {
                 funcionario.getId(),
                 funcionario.getNome(),
                 funcionario.getEmail(),
-                funcionario.getRole(),
+                funcionario.getCargo(),
                 funcionario.getTelefone(),
                 funcionario.getAtivo(),
                 token
@@ -52,7 +52,7 @@ public class AuthController {
                 "id", funcionario.getId(),
                 "nome", funcionario.getNome(),
                 "email", funcionario.getEmail(),
-                "role", funcionario.getRole()
+                "cargo", funcionario.getCargo()
         ));
     }
 

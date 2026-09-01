@@ -25,8 +25,6 @@ public class FuncionarioRequestDTO {
     @NotNull
     private TipoCargo cargo;
 
-    private String role;
-
     @NotBlank
     private String telefone;
 }

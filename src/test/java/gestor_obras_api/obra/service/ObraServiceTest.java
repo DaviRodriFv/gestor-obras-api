@@ -1,5 +1,6 @@
 package gestor_obras_api.obra.service;
 
+import gestor_obras_api.cronograma.repository.EtapaRepository;
 import gestor_obras_api.funcionario.model.Funcionario;
 import gestor_obras_api.funcionario.model.TipoCargo;
 import gestor_obras_api.obra.dto.AlterarStatusDTO;
@@ -30,6 +31,7 @@ class ObraServiceTest {
 
     @Mock private ObraRepository obraRepository;
     @Mock private ObraMapper obraMapper;
+    @Mock private EtapaRepository etapaRepository;
     @InjectMocks private ObraService obraService;
 
     private UUID obraId;

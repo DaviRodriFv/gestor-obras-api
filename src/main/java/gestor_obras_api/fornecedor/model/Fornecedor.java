@@ -1,11 +1,14 @@
 package gestor_obras_api.fornecedor.model;
 
+import gestor_obras_api.obra.model.Obra;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -39,6 +42,14 @@ public class Fornecedor {
 
     @Column(nullable = false)
     private boolean ativo;
+
+    @ManyToMany
+    @JoinTable(
+        name = "fornecedor_obra",
+        joinColumns = @JoinColumn(name = "fornecedor_id"),
+        inverseJoinColumns = @JoinColumn(name = "obra_id")
+    )
+    private Set<Obra> obras = new HashSet<>();
 
     @PrePersist
     void prePersist() {

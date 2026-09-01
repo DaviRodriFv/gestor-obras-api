@@ -48,4 +48,18 @@ public class FornecedorController {
         fornecedorService.deletar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/obras/{obraId}")
+    public ResponseEntity<FornecedorResponseDTO> vincularObra(
+            @PathVariable UUID id,
+            @PathVariable UUID obraId) {
+        return ResponseEntity.ok(fornecedorService.vincularObra(id, obraId));
+    }
+
+    @DeleteMapping("/{id}/obras/{obraId}")
+    public ResponseEntity<FornecedorResponseDTO> desvincularObra(
+            @PathVariable UUID id,
+            @PathVariable UUID obraId) {
+        return ResponseEntity.ok(fornecedorService.desvincularObra(id, obraId));
+    }
 }
