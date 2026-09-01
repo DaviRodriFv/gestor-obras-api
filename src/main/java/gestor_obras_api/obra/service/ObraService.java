@@ -3,7 +3,11 @@ package gestor_obras_api.obra.service;
 import gestor_obras_api.cronograma.model.Etapa;
 import gestor_obras_api.cronograma.model.StatusEtapa;
 import gestor_obras_api.cronograma.repository.EtapaRepository;
+import gestor_obras_api.custo.repository.CustoRepository;
+import gestor_obras_api.fornecedor.model.Fornecedor;
+import gestor_obras_api.fornecedor.repository.FornecedorRepository;
 import gestor_obras_api.funcionario.model.Funcionario;
+import gestor_obras_api.orcamento.repository.OrcamentoRepository;
 import gestor_obras_api.obra.dto.AlterarStatusDTO;
 import gestor_obras_api.obra.dto.ObraRequestDTO;
 import gestor_obras_api.obra.dto.ObraResponseDTO;
@@ -32,6 +36,9 @@ public class ObraService {
     private final ObraRepository obraRepository;
     private final ObraMapper obraMapper;
     private final EtapaRepository etapaRepository;
+    private final CustoRepository custoRepository;
+    private final OrcamentoRepository orcamentoRepository;
+    private final FornecedorRepository fornecedorRepository;
 
     private static final Map<StatusObra, Set<StatusObra>> TRANSICOES_PERMITIDAS;
 
@@ -106,10 +113,17 @@ public class ObraService {
 
     @Transactional
     public void deletar(UUID id) {
-        if (!obraRepository.existsById(id)) {
-            throw new ObraNotFoundException(id);
-        }
-        obraRepository.deleteById(id);
+        Obra obra = findOrThrow(id);
+
+        orcamentoRepository.deleteAll(orcamentoRepository.findByObraId(id));
+        custoRepository.deleteAll(custoRepository.findByObraId(id));
+        etapaRepository.deleteAll(etapaRepository.findByObraId(id));
+
+        List<Fornecedor> fornecedoresVinculados = fornecedorRepository.findByObras_Id(id);
+        fornecedoresVinculados.forEach(f -> f.getObras().removeIf(o -> o.getId().equals(id)));
+        fornecedorRepository.saveAll(fornecedoresVinculados);
+
+        obraRepository.delete(obra);
     }
 
     private Obra findOrThrow(UUID id) {

@@ -11,6 +11,7 @@ import gestor_obras_api.fornecedor.repository.FornecedorRepository;
 import gestor_obras_api.obra.exception.ObraNotFoundException;
 import gestor_obras_api.obra.model.Obra;
 import gestor_obras_api.obra.repository.ObraRepository;
+import gestor_obras_api.orcamento.repository.OrcamentoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class FornecedorService {
 
     private final FornecedorRepository fornecedorRepository;
     private final ObraRepository obraRepository;
+    private final OrcamentoRepository orcamentoRepository;
 
     @Transactional(readOnly = true)
     public List<FornecedorResponseDTO> listarTodos() {
@@ -71,6 +73,7 @@ public class FornecedorService {
         if (!fornecedorRepository.existsById(id)) {
             throw new FornecedorNotFoundException(id);
         }
+        orcamentoRepository.deleteAll(orcamentoRepository.findByFornecedorId(id));
         fornecedorRepository.deleteById(id);
     }
 

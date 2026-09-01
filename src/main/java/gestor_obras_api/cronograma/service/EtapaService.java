@@ -8,6 +8,7 @@ import gestor_obras_api.cronograma.dto.EtapaUpdateDTO;
 import gestor_obras_api.cronograma.exception.EtapaNaoPertenceObraException;
 import gestor_obras_api.cronograma.exception.EtapaNotFoundException;
 import gestor_obras_api.cronograma.model.Etapa;
+import gestor_obras_api.cronograma.model.StatusEtapa;
 import gestor_obras_api.cronograma.repository.EtapaRepository;
 import gestor_obras_api.obra.exception.ObraNotFoundException;
 import gestor_obras_api.obra.model.Obra;
@@ -82,6 +83,13 @@ public class EtapaService {
         if (dto.getDataRealFim() != null) etapa.setDataRealFim(dto.getDataRealFim());
         if (dto.getPercentualProgresso() != null) etapa.setPercentualProgresso(dto.getPercentualProgresso());
         if (dto.getStatus() != null) etapa.setStatus(dto.getStatus());
+
+        boolean etapaIniciada = etapa.getStatus() != StatusEtapa.NAO_INICIADA
+                || (etapa.getPercentualProgresso() != null && etapa.getPercentualProgresso() > 0);
+        if (etapaIniciada && etapa.getDataRealInicio() == null) {
+            throw new IllegalArgumentException(
+                    "Informe a data real de início: obrigatória quando a etapa está em andamento, atrasada ou concluída");
+        }
 
         return toDTO(etapaRepository.save(etapa));
     }

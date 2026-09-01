@@ -10,13 +10,18 @@ import gestor_obras_api.fornecedor.exception.FornecedorEmailJaCadastradoExceptio
 import gestor_obras_api.custo.exception.CustoNotFoundException;
 import gestor_obras_api.cronograma.exception.EtapaNotFoundException;
 import gestor_obras_api.cronograma.exception.EtapaNaoPertenceObraException;
+import gestor_obras_api.orcamento.exception.ArquivoNaoEncontradoException;
+import gestor_obras_api.orcamento.exception.OrcamentoNaoPertenceFornecedorException;
+import gestor_obras_api.orcamento.exception.OrcamentoNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -85,6 +90,30 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(OrcamentoNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleOrcamentoNotFound(
+            OrcamentoNotFoundException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(OrcamentoNaoPertenceFornecedorException.class)
+    public ResponseEntity<Map<String, Object>> handleOrcamentoNaoPertenceFornecedor(
+            OrcamentoNaoPertenceFornecedorException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(ArquivoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleArquivoNaoEncontrado(
+            ArquivoNaoEncontradoException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.CONTENT_TOO_LARGE, "Arquivo excede o tamanho máximo permitido", request.getRequestURI());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -95,6 +124,13 @@ public class GlobalExceptionHandler {
         Map<String, Object> body = buildErrorBody(HttpStatus.BAD_REQUEST, "Erro de validação", request.getRequestURI());
         body.put("campos", campos);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.CONFLICT,
+                "Não é possível concluir a operação: existem registros vinculados", request.getRequestURI());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
