@@ -4,6 +4,8 @@ import java.util.UUID;
 
 public class EtapaNotFoundException extends RuntimeException {
 
+    private static final long serialVersionUID = 1L;
+
     public EtapaNotFoundException(UUID id) {
         super("Etapa não encontrada com id: " + id);
     }

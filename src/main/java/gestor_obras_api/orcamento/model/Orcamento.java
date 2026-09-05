@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +21,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "orcamento")
+@SQLDelete(sql = "UPDATE orcamento SET excluido_em = now() WHERE id = ?")
+@SQLRestriction("excluido_em IS NULL")
 public class Orcamento {
 
     @Id
@@ -56,6 +60,9 @@ public class Orcamento {
 
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
+
+    @Column(name = "excluido_em")
+    private LocalDateTime excluidoEm;
 
     @PrePersist
     void prePersist() {

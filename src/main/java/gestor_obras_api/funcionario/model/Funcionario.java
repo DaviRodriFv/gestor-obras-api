@@ -4,10 +4,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,6 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "funcionarios")
+@SQLDelete(sql = "UPDATE funcionarios SET excluido_em = now() WHERE id = ?")
+@SQLRestriction("excluido_em IS NULL")
 public class Funcionario implements UserDetails {
 
     @Id
@@ -40,6 +45,9 @@ public class Funcionario implements UserDetails {
 
     @Column(nullable = false)
     private Boolean ativo = true;
+
+    @Column(name = "excluido_em")
+    private LocalDateTime excluidoEm;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

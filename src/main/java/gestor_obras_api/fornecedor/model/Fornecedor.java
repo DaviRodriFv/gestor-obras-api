@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -16,6 +18,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "fornecedor")
+@SQLDelete(sql = "UPDATE fornecedor SET excluido_em = now() WHERE id = ?")
+@SQLRestriction("excluido_em IS NULL")
 public class Fornecedor {
 
     @Id
@@ -42,6 +46,9 @@ public class Fornecedor {
 
     @Column(nullable = false)
     private boolean ativo;
+
+    @Column(name = "excluido_em")
+    private LocalDateTime excluidoEm;
 
     @ManyToMany
     @JoinTable(
