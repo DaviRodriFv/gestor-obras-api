@@ -1,5 +1,6 @@
 package gestor_obras_api.fornecedor.service;
 
+import gestor_obras_api.custo.repository.CustoRepository;
 import gestor_obras_api.fornecedor.dto.FornecedorRequestDTO;
 import gestor_obras_api.fornecedor.dto.FornecedorResponseDTO;
 import gestor_obras_api.fornecedor.dto.FornecedorUpdateDTO;
@@ -24,6 +25,7 @@ public class FornecedorService {
 
     private final FornecedorRepository fornecedorRepository;
     private final ObraRepository obraRepository;
+    private final CustoRepository custoRepository;
 
     @Transactional(readOnly = true)
     public List<FornecedorResponseDTO> listarTodos() {
@@ -71,6 +73,7 @@ public class FornecedorService {
         if (!fornecedorRepository.existsById(id)) {
             throw new FornecedorNotFoundException(id);
         }
+        custoRepository.desvincularFornecedor(id);
         fornecedorRepository.deleteById(id);
     }
 

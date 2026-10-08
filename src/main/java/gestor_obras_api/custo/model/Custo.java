@@ -1,10 +1,12 @@
 package gestor_obras_api.custo.model;
 
+import gestor_obras_api.fornecedor.model.Fornecedor;
 import gestor_obras_api.obra.model.Obra;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -30,17 +32,29 @@ public class Custo {
     @JoinColumn(name = "obra_id", nullable = false)
     private Obra obra;
 
+    /** Opcional. Ao excluir o fornecedor, passa a null e o lançamento é preservado. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CategoriaCusto categoria;
 
-    @Column(nullable = false, precision = 12, scale = 2)
+    @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal valor;
 
     @Column(nullable = false)
     private LocalDate data;
 
+    @Column(nullable = false)
     private String descricao;
+
+    // Default no banco para que o ddl-auto consiga criar a coluna em tabelas que já têm linhas
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'PENDENTE'")
+    private StatusCusto status;
 
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
@@ -51,5 +65,8 @@ public class Custo {
     @PrePersist
     void prePersist() {
         criadoEm = LocalDateTime.now();
+        if (status == null) {
+            status = StatusCusto.PENDENTE;
+        }
     }
 }

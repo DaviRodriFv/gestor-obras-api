@@ -16,7 +16,13 @@ Rodar a partir da raiz do projeto:
 Pacote base `gestor_obras_api` (nome com underscore porque `gestor-obras-api` não é um identificador Java válido):
 - `auth/` — login e emissão de JWT (`JwtService`, `JwtAuthFilter`, `SecurityConfig`)
 - `funcionario/` — CRUD completo de funcionários
-- `obra/` — CRUD de obras + workflow de status (`StatusObra`, transições em `ObraService`)
+- `obra/` — CRUD de obras + workflow de status (`StatusObra`, transições em `ObraService`); `Obra.orcamento` é o teto de gasto
+- `cronograma/` — etapas da obra (`/api/obras/{obraId}/cronograma`)
+- `fornecedor/` + `orcamento/` — fornecedores, vínculo com obras e orçamentos (propostas) de fornecedor
+- `custo/` — GerenciarCustos (`/api/obras/{obraId}/custos`): `StatusCusto` PENDENTE→PAGO|CANCELADO, `CustoRepository.somarPorCategoria` (sem cancelados)
+- `financeiro/` — DashboardFinanceiro (`/api/obras/{obraId}/financeiro`, `PUT .../orcamento`): `SituacaoFinanceira` calculada, não persistida
+
+Todas as entidades usam soft delete (`@SQLDelete` + `@SQLRestriction("excluido_em IS NULL")`). Uma associação `@ManyToOne` para uma linha soft-deletada quebra ao carregar (`EntityNotFoundException`), então desvincule antes de excluir (ver `FornecedorService.deletar`). Custos e financeiro são exclusivos de `ADMINISTRADOR` (`SecurityConfig`). Schema via `ddl-auto=update` (sem Flyway).
 
 ## Documentação do estágio (TCC — Gestor de Obras para André Paulino Negócios Imobiliários)
 
@@ -38,9 +44,7 @@ Contexto do produto em `docs/estagio/` (copiado do repositório `gestor-obras-ap
 @docs/estagio/especificacoes/casos-de-uso/gerenciar-cronograma.md
 @docs/estagio/especificacoes/casos-de-uso/gerenciar-fornecedores.md
 
-### Próximos casos de uso a implementar no backend
-Já têm especificação pronta em `casos-de-uso/`, mas ainda não têm código em `src/main/java/gestor_obras_api/`:
-- **GerenciarCronograma** — sem pacote próprio ainda; seguir o padrão de `obra/` (model → repository → service → controller, DTOs de request/response)
-- **GerenciarFornecedores** — sem pacote próprio ainda; mesmo padrão
+### Estado dos casos de uso no backend
+GerenciarObras, GerenciarFuncionarios, GerenciarCronograma, GerenciarFornecedores, GerenciarCustos e DashboardFinanceiro estão implementados. Os prompts usados para Custos/Financeiro estão em `docs/estagio/mb-novos-casos-uso/`.
 
-**Pendentes de especificação** (aparecem no diagrama de casos de uso, ainda sem `.md`): `DashboardFinanceiro`, `GerenciarCustos`, `Emitir Relatórios`. Ao especificá-los, criar o `.md` em `docs/estagio/especificacoes/casos-de-uso/` (nos dois repositórios) e adicionar o import aqui.
+**Pendentes de especificação** (aparecem no diagrama de casos de uso, ainda sem `.md`): `DashboardFinanceiro` e `GerenciarCustos` (já com código), `Emitir Relatórios` (sem código). Ao especificá-los, criar o `.md` em `docs/estagio/especificacoes/casos-de-uso/` (nos dois repositórios) e adicionar o import aqui.

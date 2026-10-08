@@ -1,6 +1,7 @@
 package gestor_obras_api.custo.dto;
 
 import gestor_obras_api.custo.model.CategoriaCusto;
+import gestor_obras_api.custo.model.StatusCusto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -18,5 +19,8 @@ public class CustoResponseDTO {
     private BigDecimal valor;
     private LocalDate data;
     private String descricao;
+    private StatusCusto status;
+    private UUID fornecedorId;
+    private String fornecedorNome;
     private LocalDateTime criadoEm;
 }

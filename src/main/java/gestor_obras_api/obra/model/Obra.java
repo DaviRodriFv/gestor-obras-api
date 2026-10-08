@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -47,6 +48,10 @@ public class Obra {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusObra status;
+
+    /** Teto de gasto da obra. Nulo enquanto não for definido no DashboardFinanceiro. */
+    @Column(precision = 15, scale = 2)
+    private BigDecimal orcamento;
 
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;

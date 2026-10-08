@@ -62,8 +62,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/redefinir-senha").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                         .requestMatchers("/api/funcionarios/**").hasRole("ADMINISTRADOR")
-                        .requestMatchers("/api/obras/**", "/api/custos/**", "/api/fornecedores/**",
-                                "/api/relatorios/**", "/api/financeiro/**")
+                        // Dados financeiros: perfil Equipe não tem acesso. Precisa vir antes de /api/obras/**
+                        .requestMatchers("/api/obras/*/custos", "/api/obras/*/custos/**",
+                                "/api/obras/*/financeiro", "/api/obras/*/orcamento")
+                            .hasRole("ADMINISTRADOR")
+                        .requestMatchers("/api/obras/**", "/api/fornecedores/**", "/api/relatorios/**")
                             .hasAnyRole("ADMINISTRADOR", "EQUIPE")
                         .anyRequest().authenticated()
                 )
@@ -100,6 +103,7 @@ public class SecurityConfig {
 
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
         response.getWriter().write(json);
     }
 
