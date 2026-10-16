@@ -1,14 +1,18 @@
 package gestor_obras_api.custo.service;
 
 import gestor_obras_api.custo.dto.AlterarStatusCustoDTO;
+import gestor_obras_api.custo.dto.AnexoCustoDTO;
 import gestor_obras_api.custo.dto.CustoRequestDTO;
 import gestor_obras_api.custo.dto.CustoResponseDTO;
 import gestor_obras_api.custo.dto.CustoUpdateDTO;
 import gestor_obras_api.custo.dto.GastoCategoriaDTO;
+import gestor_obras_api.custo.exception.AnexoNaoEncontradoException;
 import gestor_obras_api.custo.exception.CustoNotFoundException;
 import gestor_obras_api.custo.model.CategoriaCusto;
 import gestor_obras_api.custo.model.Custo;
+import gestor_obras_api.custo.model.CustoAnexo;
 import gestor_obras_api.custo.model.StatusCusto;
+import gestor_obras_api.custo.repository.CustoAnexoRepository;
 import gestor_obras_api.custo.repository.CustoRepository;
 import gestor_obras_api.custo.repository.TotalPorCategoria;
 import gestor_obras_api.fornecedor.exception.FornecedorNotFoundException;
@@ -20,7 +24,9 @@ import gestor_obras_api.obra.repository.ObraRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
@@ -51,7 +57,12 @@ public class CustoService {
             EnumSet.of(StatusCusto.PAGO, StatusCusto.CANCELADO));
     }
 
+    /** Anexo aceita o PDF do orçamento/nota ou uma foto do documento. */
+    private static final Set<String> TIPOS_ANEXO_PERMITIDOS = Set.of("application/pdf", "image/png", "image/jpeg");
+    private static final Set<String> EXTENSOES_ANEXO_PERMITIDAS = Set.of(".pdf", ".png", ".jpg", ".jpeg");
+
     private final CustoRepository custoRepository;
+    private final CustoAnexoRepository custoAnexoRepository;
     private final ObraRepository obraRepository;
     private final FornecedorRepository fornecedorRepository;
 
@@ -119,6 +130,46 @@ public class CustoService {
         custoRepository.delete(findOrThrow(obraId, id));
     }
 
+    /** Anexa ou substitui o arquivo do lançamento (orçamento, nota fiscal, recibo). */
+    @Transactional
+    public CustoResponseDTO anexarArquivo(UUID obraId, UUID id, MultipartFile arquivo) {
+        Custo custo = findOrThrow(obraId, id);
+        validarAnexo(arquivo);
+
+        CustoAnexo anexo = custoAnexoRepository.findByCustoId(custo.getId()).orElseGet(() -> {
+            CustoAnexo novo = new CustoAnexo();
+            novo.setCusto(custo);
+            return novo;
+        });
+        try {
+            anexo.setConteudo(arquivo.getBytes());
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Não foi possível ler o arquivo enviado");
+        }
+        custoAnexoRepository.save(anexo);
+
+        custo.setAnexoNome(arquivo.getOriginalFilename());
+        custo.setAnexoTipo(arquivo.getContentType());
+        return toDTO(custoRepository.save(custo));
+    }
+
+    @Transactional(readOnly = true)
+    public AnexoCustoDTO baixarArquivo(UUID obraId, UUID id) {
+        Custo custo = findOrThrow(obraId, id);
+        CustoAnexo anexo = custoAnexoRepository.findByCustoId(custo.getId())
+            .orElseThrow(() -> new AnexoNaoEncontradoException(id));
+        return new AnexoCustoDTO(custo.getAnexoNome(), custo.getAnexoTipo(), anexo.getConteudo());
+    }
+
+    @Transactional
+    public CustoResponseDTO removerArquivo(UUID obraId, UUID id) {
+        Custo custo = findOrThrow(obraId, id);
+        custoAnexoRepository.findByCustoId(custo.getId()).ifPresent(custoAnexoRepository::delete);
+        custo.setAnexoNome(null);
+        custo.setAnexoTipo(null);
+        return toDTO(custoRepository.save(custo));
+    }
+
     @Transactional(readOnly = true)
     public List<GastoCategoriaDTO> listarPorCategoria(UUID obraId) {
         return somarPorCategoria(findObraOrThrow(obraId));
@@ -172,6 +223,20 @@ public class CustoService {
         }
     }
 
+    private void validarAnexo(MultipartFile arquivo) {
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw new IllegalArgumentException("Selecione um arquivo para anexar");
+        }
+        String tipo = arquivo.getContentType();
+        String nome = arquivo.getOriginalFilename();
+        boolean tipoValido = tipo != null && TIPOS_ANEXO_PERMITIDOS.contains(tipo.toLowerCase(Locale.ROOT));
+        boolean extensaoValida = nome != null && EXTENSOES_ANEXO_PERMITIDAS.stream()
+            .anyMatch(ext -> nome.toLowerCase(Locale.ROOT).endsWith(ext));
+        if (!tipoValido && !extensaoValida) {
+            throw new IllegalArgumentException("O anexo deve ser um PDF ou uma imagem (PNG ou JPG)");
+        }
+    }
+
     private Fornecedor buscarFornecedor(UUID fornecedorId) {
         if (fornecedorId == null) {
             return null;
@@ -199,6 +264,8 @@ public class CustoService {
             c.getDescricao(), c.getStatus(),
             f != null ? f.getId() : null,
             f != null ? f.getNome() : null,
+            c.possuiAnexo(),
+            c.getAnexoNome(),
             c.getCriadoEm()
         );
     }

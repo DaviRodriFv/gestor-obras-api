@@ -64,9 +64,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/funcionarios/**").hasRole("ADMINISTRADOR")
                         // Dados financeiros: perfil Equipe não tem acesso. Precisa vir antes de /api/obras/**
                         .requestMatchers("/api/obras/*/custos", "/api/obras/*/custos/**",
-                                "/api/obras/*/financeiro", "/api/obras/*/orcamento")
+                                "/api/obras/*/financeiro", "/api/obras/*/orcamento",
+                                "/api/obras/*/relatorio")
                             .hasRole("ADMINISTRADOR")
-                        .requestMatchers("/api/obras/**", "/api/fornecedores/**", "/api/relatorios/**")
+                        .requestMatchers("/api/obras/**", "/api/fornecedores/**", "/api/relatorios/**", "/api/dashboard")
                             .hasAnyRole("ADMINISTRADOR", "EQUIPE")
                         .anyRequest().authenticated()
                 )

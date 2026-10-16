@@ -22,5 +22,7 @@ public class CustoResponseDTO {
     private StatusCusto status;
     private UUID fornecedorId;
     private String fornecedorNome;
+    private boolean possuiAnexo;
+    private String anexoNome;
     private LocalDateTime criadoEm;
 }

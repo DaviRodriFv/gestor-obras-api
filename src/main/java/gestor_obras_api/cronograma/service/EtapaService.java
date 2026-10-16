@@ -121,7 +121,8 @@ public class EtapaService {
         }
     }
 
-    private Integer calcularProgressoGeral(List<Etapa> etapas) {
+    /** Média simples do percentual das etapas; 0 quando não há etapas. Também usado pelo Dashboard. */
+    public static Integer calcularProgressoGeral(List<Etapa> etapas) {
         if (etapas.isEmpty()) {
             return 0;
         }

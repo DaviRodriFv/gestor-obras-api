@@ -7,6 +7,7 @@ import gestor_obras_api.obra.exception.ObraNotFoundException;
 import gestor_obras_api.obra.exception.TransicaoStatusInvalidaException;
 import gestor_obras_api.fornecedor.exception.FornecedorNotFoundException;
 import gestor_obras_api.fornecedor.exception.FornecedorEmailJaCadastradoException;
+import gestor_obras_api.custo.exception.AnexoNaoEncontradoException;
 import gestor_obras_api.custo.exception.CustoNotFoundException;
 import gestor_obras_api.cronograma.exception.EtapaNotFoundException;
 import gestor_obras_api.cronograma.exception.EtapaNaoPertenceObraException;
@@ -75,6 +76,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustoNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleCustoNotFound(
             CustoNotFoundException ex, HttpServletRequest request) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(AnexoNaoEncontradoException.class)
+    public ResponseEntity<Map<String, Object>> handleAnexoNaoEncontrado(
+            AnexoNaoEncontradoException ex, HttpServletRequest request) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI());
     }
 

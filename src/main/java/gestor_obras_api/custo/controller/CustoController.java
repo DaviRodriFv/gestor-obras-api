@@ -1,6 +1,7 @@
 package gestor_obras_api.custo.controller;
 
 import gestor_obras_api.custo.dto.AlterarStatusCustoDTO;
+import gestor_obras_api.custo.dto.AnexoCustoDTO;
 import gestor_obras_api.custo.dto.CustoRequestDTO;
 import gestor_obras_api.custo.dto.CustoResponseDTO;
 import gestor_obras_api.custo.dto.CustoUpdateDTO;
@@ -10,9 +11,12 @@ import gestor_obras_api.custo.model.StatusCusto;
 import gestor_obras_api.custo.service.CustoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -74,5 +78,34 @@ public class CustoController {
             @PathVariable UUID id) {
         custoService.deletar(obraId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping(value = "/{id}/anexo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CustoResponseDTO> anexarArquivo(
+            @PathVariable UUID obraId,
+            @PathVariable UUID id,
+            @RequestPart("arquivo") MultipartFile arquivo) {
+        return ResponseEntity.ok(custoService.anexarArquivo(obraId, id, arquivo));
+    }
+
+    @GetMapping("/{id}/anexo")
+    public ResponseEntity<byte[]> baixarArquivo(
+            @PathVariable UUID obraId,
+            @PathVariable UUID id) {
+        AnexoCustoDTO anexo = custoService.baixarArquivo(obraId, id);
+        MediaType mediaType = anexo.tipo() != null
+                ? MediaType.parseMediaType(anexo.tipo())
+                : MediaType.APPLICATION_OCTET_STREAM;
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + anexo.nome() + "\"")
+                .body(anexo.conteudo());
+    }
+
+    @DeleteMapping("/{id}/anexo")
+    public ResponseEntity<CustoResponseDTO> removerArquivo(
+            @PathVariable UUID obraId,
+            @PathVariable UUID id) {
+        return ResponseEntity.ok(custoService.removerArquivo(obraId, id));
     }
 }

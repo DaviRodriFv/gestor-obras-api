@@ -56,6 +56,13 @@ public class Custo {
     @ColumnDefault("'PENDENTE'")
     private StatusCusto status;
 
+    /** Nome e tipo do arquivo anexado; o conteúdo fica em {@link CustoAnexo}. Nulos quando não há anexo. */
+    @Column(name = "anexo_nome")
+    private String anexoNome;
+
+    @Column(name = "anexo_tipo")
+    private String anexoTipo;
+
     @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
@@ -68,5 +75,9 @@ public class Custo {
         if (status == null) {
             status = StatusCusto.PENDENTE;
         }
+    }
+
+    public boolean possuiAnexo() {
+        return anexoNome != null;
     }
 }

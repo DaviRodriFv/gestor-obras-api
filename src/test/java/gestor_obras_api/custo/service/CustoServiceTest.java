@@ -1,14 +1,18 @@
 package gestor_obras_api.custo.service;
 
 import gestor_obras_api.custo.dto.AlterarStatusCustoDTO;
+import gestor_obras_api.custo.dto.AnexoCustoDTO;
 import gestor_obras_api.custo.dto.CustoRequestDTO;
 import gestor_obras_api.custo.dto.CustoResponseDTO;
 import gestor_obras_api.custo.dto.CustoUpdateDTO;
 import gestor_obras_api.custo.dto.GastoCategoriaDTO;
+import gestor_obras_api.custo.exception.AnexoNaoEncontradoException;
 import gestor_obras_api.custo.exception.CustoNotFoundException;
 import gestor_obras_api.custo.model.CategoriaCusto;
 import gestor_obras_api.custo.model.Custo;
+import gestor_obras_api.custo.model.CustoAnexo;
 import gestor_obras_api.custo.model.StatusCusto;
+import gestor_obras_api.custo.repository.CustoAnexoRepository;
 import gestor_obras_api.custo.repository.CustoRepository;
 import gestor_obras_api.custo.repository.TotalPorCategoria;
 import gestor_obras_api.fornecedor.exception.FornecedorNotFoundException;
@@ -25,6 +29,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -40,6 +45,7 @@ import static org.mockito.Mockito.*;
 class CustoServiceTest {
 
     @Mock private CustoRepository custoRepository;
+    @Mock private CustoAnexoRepository custoAnexoRepository;
     @Mock private ObraRepository obraRepository;
     @Mock private FornecedorRepository fornecedorRepository;
     @InjectMocks private CustoService custoService;
@@ -240,6 +246,96 @@ class CustoServiceTest {
             .isEqualByComparingTo("33.33");
         assertThat(CustoService.calcularPercentual(new BigDecimal("2"), new BigDecimal("3")))
             .isEqualByComparingTo("66.67");
+    }
+
+    @Test
+    void anexarArquivo_pdf_deveSalvarConteudoENomeNoCusto() {
+        Custo custo = custo(StatusCusto.PENDENTE);
+        mockCustoDaObra(custo);
+        when(custoAnexoRepository.findByCustoId(custo.getId())).thenReturn(Optional.empty());
+        when(custoRepository.save(custo)).thenReturn(custo);
+        MockMultipartFile pdf = new MockMultipartFile("arquivo", "orcamento-piso.pdf", "application/pdf", new byte[]{1, 2, 3});
+
+        CustoResponseDTO resultado = custoService.anexarArquivo(obraId, custo.getId(), pdf);
+
+        assertThat(resultado.isPossuiAnexo()).isTrue();
+        assertThat(resultado.getAnexoNome()).isEqualTo("orcamento-piso.pdf");
+        verify(custoAnexoRepository).save(argThat(a -> a.getCusto() == custo && a.getConteudo().length == 3));
+    }
+
+    @Test
+    void anexarArquivo_quandoJaTemAnexo_deveSubstituir() {
+        Custo custo = custo(StatusCusto.PAGO);
+        mockCustoDaObra(custo);
+        CustoAnexo existente = new CustoAnexo();
+        existente.setCusto(custo);
+        existente.setConteudo(new byte[]{9});
+        when(custoAnexoRepository.findByCustoId(custo.getId())).thenReturn(Optional.of(existente));
+        when(custoRepository.save(custo)).thenReturn(custo);
+        MockMultipartFile foto = new MockMultipartFile("arquivo", "nota.jpg", "image/jpeg", new byte[]{4, 5});
+
+        custoService.anexarArquivo(obraId, custo.getId(), foto);
+
+        assertThat(existente.getConteudo()).containsExactly(4, 5);
+        assertThat(custo.getAnexoNome()).isEqualTo("nota.jpg");
+        assertThat(custo.getAnexoTipo()).isEqualTo("image/jpeg");
+    }
+
+    @Test
+    void anexarArquivo_tipoNaoPermitido_deveLancarIllegalArgument() {
+        Custo custo = custo(StatusCusto.PENDENTE);
+        mockCustoDaObra(custo);
+        MockMultipartFile planilha = new MockMultipartFile("arquivo", "custos.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{1});
+
+        assertThatThrownBy(() -> custoService.anexarArquivo(obraId, custo.getId(), planilha))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("O anexo deve ser um PDF ou uma imagem (PNG ou JPG)");
+        verify(custoAnexoRepository, never()).save(any());
+    }
+
+    @Test
+    void baixarArquivo_semAnexo_deveLancarAnexoNaoEncontrado() {
+        Custo custo = custo(StatusCusto.PENDENTE);
+        mockCustoDaObra(custo);
+        when(custoAnexoRepository.findByCustoId(custo.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> custoService.baixarArquivo(obraId, custo.getId()))
+            .isInstanceOf(AnexoNaoEncontradoException.class);
+    }
+
+    @Test
+    void baixarArquivo_comAnexo_deveRetornarNomeTipoEConteudo() {
+        Custo custo = custo(StatusCusto.PENDENTE);
+        custo.setAnexoNome("orcamento.pdf");
+        custo.setAnexoTipo("application/pdf");
+        mockCustoDaObra(custo);
+        CustoAnexo anexo = new CustoAnexo();
+        anexo.setConteudo(new byte[]{7, 8});
+        when(custoAnexoRepository.findByCustoId(custo.getId())).thenReturn(Optional.of(anexo));
+
+        AnexoCustoDTO resultado = custoService.baixarArquivo(obraId, custo.getId());
+
+        assertThat(resultado.nome()).isEqualTo("orcamento.pdf");
+        assertThat(resultado.tipo()).isEqualTo("application/pdf");
+        assertThat(resultado.conteudo()).containsExactly(7, 8);
+    }
+
+    @Test
+    void removerArquivo_deveApagarAnexoELimparNome() {
+        Custo custo = custo(StatusCusto.PENDENTE);
+        custo.setAnexoNome("orcamento.pdf");
+        custo.setAnexoTipo("application/pdf");
+        mockCustoDaObra(custo);
+        CustoAnexo anexo = new CustoAnexo();
+        when(custoAnexoRepository.findByCustoId(custo.getId())).thenReturn(Optional.of(anexo));
+        when(custoRepository.save(custo)).thenReturn(custo);
+
+        CustoResponseDTO resultado = custoService.removerArquivo(obraId, custo.getId());
+
+        verify(custoAnexoRepository).delete(anexo);
+        assertThat(resultado.isPossuiAnexo()).isFalse();
+        assertThat(resultado.getAnexoNome()).isNull();
     }
 
     private void mockCustoDaObra(Custo custo) {
