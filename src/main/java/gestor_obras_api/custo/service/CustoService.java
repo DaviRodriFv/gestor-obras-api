@@ -55,6 +55,11 @@ public class CustoService {
         TRANSICOES_PERMITIDAS = new EnumMap<>(StatusCusto.class);
         TRANSICOES_PERMITIDAS.put(StatusCusto.PENDENTE,
             EnumSet.of(StatusCusto.PAGO, StatusCusto.CANCELADO));
+        // Permite desfazer um pagamento/cancelamento lançado por engano, voltando para Pendente.
+        TRANSICOES_PERMITIDAS.put(StatusCusto.PAGO,
+            EnumSet.of(StatusCusto.PENDENTE));
+        TRANSICOES_PERMITIDAS.put(StatusCusto.CANCELADO,
+            EnumSet.of(StatusCusto.PENDENTE));
     }
 
     /** Anexo aceita o PDF do orçamento/nota ou uma foto do documento. */

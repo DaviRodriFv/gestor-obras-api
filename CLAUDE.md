@@ -19,7 +19,7 @@ Pacote base `gestor_obras_api` (nome com underscore porque `gestor-obras-api` n�
 - `obra/` — CRUD de obras + workflow de status (`StatusObra`, transições em `ObraService`); `Obra.orcamento` é o teto de gasto
 - `cronograma/` — etapas da obra (`/api/obras/{obraId}/cronograma`)
 - `fornecedor/` + `orcamento/` — fornecedores, vínculo com obras e orçamentos (propostas) de fornecedor
-- `custo/` — GerenciarCustos (`/api/obras/{obraId}/custos`): `StatusCusto` PENDENTE→PAGO|CANCELADO, `CustoRepository.somarPorCategoria` (sem cancelados). Anexo do lançamento (orçamento/nota, PDF/PNG/JPG) em `.../custos/{id}/anexo`: bytes na tabela `custo_anexo` (`CustoAnexo`), só nome/tipo no `Custo`, para a listagem não carregar arquivos
+- `custo/` — GerenciarCustos (`/api/obras/{obraId}/custos`): `StatusCusto` PENDENTE→PAGO|CANCELADO (e PAGO|CANCELADO→PENDENTE para desfazer), `CustoRepository.somarPorCategoria` (sem cancelados). Anexo do lançamento (orçamento/nota, PDF/PNG/JPG) em `.../custos/{id}/anexo`: bytes na tabela `custo_anexo` (`CustoAnexo`), só nome/tipo no `Custo`, para a listagem não carregar arquivos
 - `financeiro/` — DashboardFinanceiro (`/api/obras/{obraId}/financeiro`, `PUT .../orcamento`): `SituacaoFinanceira` calculada, não persistida
 - `relatorio/` — Emitir Relatórios (`GET /api/obras/{obraId}/relatorio`): só agrega obra + cronograma + financeiro + custos via os services existentes, nada é persistido
 - `dashboard/` — tela inicial (`GET /api/dashboard`): por obra, % de conclusão, próxima etapa e dias para o prazo (alerta ≤ 30 dias); contadores por status. Situação financeira só vem para `ADMINISTRADOR` (decidido no controller pelo cargo do usuário logado)
