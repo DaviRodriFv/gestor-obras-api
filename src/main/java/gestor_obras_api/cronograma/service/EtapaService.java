@@ -90,6 +90,14 @@ public class EtapaService {
             throw new IllegalArgumentException(
                     "Informe a data real de início: obrigatória quando a etapa está em andamento, atrasada ou concluída");
         }
+        if (etapa.getDataRealFim() != null) {
+            if (etapa.getDataRealInicio() == null) {
+                throw new IllegalArgumentException("Informe a data real de início antes da data real de término");
+            }
+            if (etapa.getDataRealFim().isBefore(etapa.getDataRealInicio())) {
+                throw new IllegalArgumentException("dataRealFim deve ser >= dataRealInicio");
+            }
+        }
 
         return toDTO(etapaRepository.save(etapa));
     }

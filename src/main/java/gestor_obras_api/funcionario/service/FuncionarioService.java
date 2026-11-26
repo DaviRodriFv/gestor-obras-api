@@ -47,6 +47,10 @@ public class FuncionarioService {
 
     public FuncionarioResponseDTO atualizar(Long id, FuncionarioUpdateDTO dto) {
         Funcionario funcionario = findOrThrow(id);
+        if (dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(funcionario.getEmail())
+                && funcionarioRepository.existsByEmail(dto.getEmail())) {
+            throw new EmailJaCadastradoException(dto.getEmail());
+        }
 
         if (dto.getNome() != null) funcionario.setNome(dto.getNome());
         if (dto.getEmail() != null) funcionario.setEmail(dto.getEmail());

@@ -20,9 +20,11 @@ public class ObraRequestDTO {
     private String nome;
 
     @NotBlank
+    @Size(max = 255)
     private String endereco;
 
     @NotBlank
+    @Size(max = 255)
     private String cliente;
 
     @NotNull

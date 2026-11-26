@@ -19,6 +19,7 @@ public class EtapaRequestDTO {
     @Size(min = 3, max = 150)
     private String nome;
 
+    @Size(max = 255)
     private String descricao;
 
     @NotNull

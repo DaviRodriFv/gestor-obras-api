@@ -183,7 +183,7 @@ class CustoServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"PENDENTE, PAGO", "PENDENTE, CANCELADO"})
+    @CsvSource({"PENDENTE, PAGO", "PENDENTE, CANCELADO", "PAGO, PENDENTE", "CANCELADO, PENDENTE"})
     void alterarStatus_transicoesPermitidas(StatusCusto de, StatusCusto para) {
         Custo custo = custo(de);
         mockCustoDaObra(custo);
@@ -197,8 +197,8 @@ class CustoServiceTest {
     @ParameterizedTest
     @CsvSource({
         "PENDENTE, PENDENTE",
-        "PAGO, PENDENTE", "PAGO, CANCELADO", "PAGO, PAGO",
-        "CANCELADO, PENDENTE", "CANCELADO, PAGO", "CANCELADO, CANCELADO"
+        "PAGO, CANCELADO", "PAGO, PAGO",
+        "CANCELADO, PAGO", "CANCELADO, CANCELADO"
     })
     void alterarStatus_transicoesInvalidas_deveLancarIllegalArgument(StatusCusto de, StatusCusto para) {
         Custo custo = custo(de);

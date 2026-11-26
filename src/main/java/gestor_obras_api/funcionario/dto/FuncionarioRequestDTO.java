@@ -4,6 +4,7 @@ import gestor_obras_api.funcionario.model.TipoCargo;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -26,5 +27,6 @@ public class FuncionarioRequestDTO {
     private TipoCargo cargo;
 
     @NotBlank
+    @Pattern(regexp = "\\(\\d{2}\\) \\d{4,5}-\\d{4}", message = "Telefone deve estar no formato (00) 00000-0000")
     private String telefone;
 }

@@ -2,6 +2,7 @@ package gestor_obras_api.custo.dto;
 
 import gestor_obras_api.custo.model.CategoriaCusto;
 import gestor_obras_api.custo.model.StatusCusto;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -22,6 +23,7 @@ public class CustoRequestDTO {
     private CategoriaCusto categoria;
 
     @NotNull
+    @Digits(integer = 13, fraction = 2, message = "Valor deve ter no máximo 2 casas decimais")
     private BigDecimal valor;
 
     @NotNull

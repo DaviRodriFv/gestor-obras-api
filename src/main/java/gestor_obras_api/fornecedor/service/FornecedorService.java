@@ -57,6 +57,10 @@ public class FornecedorService {
     @Transactional
     public FornecedorResponseDTO atualizar(UUID id, FornecedorUpdateDTO dto) {
         Fornecedor fornecedor = findOrThrow(id);
+        if (dto.getEmail() != null && !dto.getEmail().equalsIgnoreCase(fornecedor.getEmail())
+                && fornecedorRepository.existsByEmail(dto.getEmail())) {
+            throw new FornecedorEmailJaCadastradoException(dto.getEmail());
+        }
 
         if (dto.getNome() != null) fornecedor.setNome(dto.getNome());
         if (dto.getTipoServico() != null) fornecedor.setTipoServico(dto.getTipoServico());
