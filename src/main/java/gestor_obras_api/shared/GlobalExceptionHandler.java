@@ -18,6 +18,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import tools.jackson.core.JacksonException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -130,6 +132,29 @@ public class GlobalExceptionHandler {
         }
         Map<String, Object> body = buildErrorBody(HttpStatus.BAD_REQUEST, "Erro de validação", request.getRequestURI());
         body.put("campos", campos);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * Corpo com tipo errado (letra em campo numérico, data inválida, opção inexistente).
+     * Sem este handler o Spring encaminhava para /error e a resposta saía como 401.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleNotReadable(
+            HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String campo = null;
+        for (Throwable t = ex.getCause(); t != null; t = t.getCause()) {
+            if (t instanceof JacksonException je && !je.getPath().isEmpty()) {
+                campo = je.getPath().get(je.getPath().size() - 1).getPropertyName();
+                break;
+            }
+        }
+        Map<String, Object> body = buildErrorBody(HttpStatus.BAD_REQUEST, "Erro de validação", request.getRequestURI());
+        if (campo != null) {
+            body.put("campos", Map.of(campo, "Valor em formato inválido para este campo"));
+        } else {
+            body.put("message", "Corpo da requisição inválido");
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
